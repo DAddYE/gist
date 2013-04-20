@@ -11,6 +11,6 @@ gist(){
   [[ $reply =~ ^[Yy]$ ]] && git add $1 && git commit -a && git push
   echo "** You can share: https://raw.github.com/DAddYE/gist/master/$1"
   echo "** You can browse diffs: https://github.com/DAddYE/dotfiles/commit/$(git rev-list head | head -n1)"
-  cd -
+  cd - > /dev/null
 }
 ```
