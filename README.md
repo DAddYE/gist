@@ -9,8 +9,10 @@ gist(){
   vim $1
   read -p 'Do you want push changes? (y/n) ' reply
   [[ $reply =~ ^[Yy]$ ]] && git add $1 && git commit -a && git push
-  echo "** You can share: https://raw.github.com/DAddYE/gist/master/$1"
-  echo "** You can browse diffs: https://github.com/DAddYE/dotfiles/commit/$(git rev-list head | head -n1)"
+  echo
+  echo
+  echo "Link: https://raw.github.com/DAddYE/gist/master/$1"
+  echo "Diff: https://github.com/DAddYE/gist/commit/`git rev-list head | head -n1`"
   cd - > /dev/null
 }
 ```
