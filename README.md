@@ -36,6 +36,22 @@ complete -o nospace -F __gist_complete gist
 Now you can use `gist [tab][tab]` and will autocomplete with the content of `/usr/src/extras/gist`
 (in my case).
 
+## Shortner
+
+You may want to shortcut your gist files, so here a function:
+
+```sh
+gitio(){
+  curl http://git.io -siF "url=$1" | grep Location: | sed "s/Location: //"
+}
+```
+
+You can add it in your bash profile and use like:
+
+```sh
+$ gitio http://github.com/daddye/gist
+```
+
 ## License
 
 DWYW: Do whatever you want!
