@@ -1,4 +1,4 @@
-## DAddYE GIST REPO
+## BUILD YOUR OWN GIST REPO
 
 Create a repo called `gist` then clone it somewhere (in my case) `/usr/src/extras/gist`, then add in
 your `.bash_profile`
@@ -60,6 +60,6 @@ DWYW: Do whatever you want!
 
 ## Author
 
-Github, Twitter: @DAddYE
-Website: http://daddye.it
-Email: info[-]daddye.it
+* Github, Twitter: @DAddYE
+* Website: http://daddye.it
+* Email: info[-]daddye.it

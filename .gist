@@ -38,7 +38,7 @@ __gist_complete(){
   local IFS=$'\n'
   wrkdir="/usr/src/extras/gist/"
   cur=${COMP_WORDS[COMP_CWORD]}
-  len=`(${#wrkdir} + 2)`
+  len=$((${#wrkdir} + 2))
   COMPREPLY=( $(compgen -df $wrkdir/$cur| cut -b $len-) )
 }
 
