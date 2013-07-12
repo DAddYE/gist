@@ -8,7 +8,6 @@ const LIBUV =
   elif defined(macosx):  "libuv.dylib"
   else:                  "libuv.so"
 
-{.push callConv: cdecl, dynlib: LIBUV.}
 type
   TBuf* = object
     base* : cstring
@@ -73,7 +72,7 @@ type
   THandleType* {.size: sizeof(cint).} = enum
     UNKNOWN_HANDLE = 0, ASYNC, CHECK, FS_EVENT, FS_POLL, HANDLE, IDLE, NAMED_PIPE, POLL, PREPARE,
     PROCESS, STREAM, TCP, TIMER, TTY, UDP, SIGNAL, FILE, HANDLE_TYPE_MAX
-  TReqType* {.size: sizeof(cint).} = enum
+  TReqType* {.size: sizeof(cint), pure.} = enum
     UNKNOWN_REQ = 0, REQ, CONNECT, WRITE, SHUTDOWN, UDP_SEND, FS, WORK, GETADDRINFO, REQ_TYPE_MAX
   TRunMode* {.size: sizeof(cint).} = enum
     RUN_DEFAULT = 0, RUN_ONCE, RUN_NOWAIT
@@ -304,7 +303,7 @@ type
     address* : TAddressU
     netmask* : TNetmaskU
 
-  TFsType* {.size: sizeof(cint).} = enum
+  TFsType* {.size: sizeof(cint), pure.} = enum
     FS_UNKNOWN = - 1, FS_CUSTOM, FS_OPEN, FS_CLOSE, FS_READ, FS_WRITE, FS_SENDFILE, FS_STAT,
     FS_LSTAT, FS_FSTAT, FS_FTRUNCATE, FS_UTIME, FS_FUTIME, FS_CHMOD, FS_FCHMOD, FS_FSYNC,
     FS_FDATASYNC, FS_UNLINK, FS_RMDIR, FS_MKDIR, FS_RENAME, FS_READDIR, FS_LINK, FS_SYMLINK,
@@ -603,206 +602,209 @@ type
     send_cb* : TUdpSendCb
     bufsml* : array[0..4 - 1, TBuf]
 
-proc uv_version*(): cuint {.importc.}
-proc uv_version_string*(): cstring {.importc.}
-proc uv_loop_new*(): ptr TLoop {.importc.}
-proc uv_loop_delete*(a2: ptr TLoop) {.importc.}
-proc uv_default_loop*(): ptr TLoop {.importc.}
-proc uv_run*(a2: ptr TLoop; mode: TRunMode): cint {.importc.}
-proc uv_stop*(a2: ptr TLoop) {.importc.}
-proc uv_ref*(a2: ptr THandle) {.importc.}
-proc uv_unref*(a2: ptr THandle) {.importc.}
-# proc uv_has_ref*(a2: ptr THandle): cint {.importc.}
-proc uv_update_time*(a2: ptr TLoop) {.importc.}
-proc uv_now*(a2: ptr TLoop): uint64 {.importc.}
-proc uv_backend_fd*(a2: ptr TLoop): cint {.importc.}
-proc uv_backend_timeout*(a2: ptr TLoop): cint {.importc.}
-proc uv_last_error*(a2: ptr TLoop): TErr {.importc.}
-proc uv_strerror*(err: TErr): cstring {.importc.}
-proc uv_err_name*(err: TErr): cstring {.importc.}
-proc uv_shutdown(req: ptr TShutdown; handle: ptr TStream; cb: TShutdownCb): cint {.importc.}
-proc uv_handle_size*(ttype: THandleType): int {.importc.}
-proc uv_req_size*(ttype: TReqType): int {.importc.}
-proc uv_is_active*(handle: ptr THandle): cint {.importc.}
-proc uv_walk*(loop: ptr TLoop; walk_cb: TWalkCb; arg: pointer) {.importc.}
-proc uv_close*(handle: ptr THandle; close_cb: TCloseCb) {.importc.}
-proc uv_buf_init*(base: cstring; len: cuint): TBuf {.importc.}
-proc uv_strlcpy*(dst: cstring; src: cstring; size: int): int {.importc.}
-proc uv_strlcat*(dst: cstring; src: cstring; size: int): int {.importc.}
-proc uv_listen*(stream: ptr TStream; backlog: cint; cb: TConnectionCb): cint {.importc.}
-proc uv_accept*(server: ptr TStream; client: ptr TStream): cint {.importc.}
-proc uv_read_start*(a2: ptr TStream; alloc_cb: TAllocCb; read_cb: TReadCb): cint {.importc.}
-proc uv_read_stop*(a2: ptr TStream): cint {.importc.}
-proc uv_read2_start*(a2: ptr TStream; alloc_cb: TAllocCb; read_cb: TRead2Cb): cint {.importc.}
-proc uv_write(req: ptr TWrite; handle: ptr TStream; bufs: ptr TBuf; bufcnt: cint; cb: TWriteCb): cint {.importc.}
-proc uv_write2*(req: ptr TWrite; handle: ptr TStream; bufs: ptr TBuf; bufcnt: cint;
-                send_handle: ptr TStream; cb: TWriteCb): cint {.importc.}
-proc uv_is_readable*(handle: ptr TStream): cint {.importc.}
-proc uv_is_writable*(handle: ptr TStream): cint {.importc.}
-# proc uv_stream_set_blocking*(handle: ptr TStream; blocking: cint): cint {.importc.}
-proc uv_is_closing*(handle: ptr THandle): cint {.importc.}
-proc uv_tcp_init*(a2: ptr TLoop; handle: ptr TTcp): cint {.importc.}
-proc uv_tcp_open*(handle: ptr TTcp; sock: TOsSock): cint {.importc.}
-proc uv_tcp_nodelay*(handle: ptr TTcp; enable: cint): cint {.importc.}
-proc uv_tcp_keepalive*(handle: ptr TTcp; enable: cint; delay: cuint): cint {.importc.}
-proc uv_tcp_simultaneous_accepts*(handle: ptr TTcp; enable: cint): cint {.importc.}
-proc uv_tcp_bind*(handle: ptr TTcp; a3: TSockaddr_in): cint {.importc.}
-proc uv_tcp_bind6*(handle: ptr TTcp; a3: TSockaddr_in6): cint {.importc.}
-proc uv_tcp_getsockname*(handle: ptr TTcp; name: ptr TSockaddr; namelen: ptr cint): cint {.importc.}
-proc uv_tcp_getpeername*(handle: ptr TTcp; name: ptr TSockaddr; namelen: ptr cint): cint {.importc.}
-proc uv_tcp_connect*(req: ptr TConnect; handle: ptr TTcp; address: TSockaddr_in; cb: TConnectCb): cint {.importc.}
-proc uv_tcp_connect6*(req: ptr TConnect; handle: ptr TTcp; address: TSockaddr_in6; cb: TConnectCb): cint {.importc.}
-proc uv_udp_init*(a2: ptr TLoop; handle: ptr TUdp): cint {.importc.}
-proc uv_udp_open*(handle: ptr TUdp; sock: TOsSock): cint {.importc.}
-proc uv_udp_bind*(handle: ptr TUdp; adr: TSockaddr_in; flags: cuint): cint {.importc.}
-proc uv_udp_bind6*(handle: ptr TUdp; adr: TSockaddr_in6; flags: cuint): cint {.importc.}
-proc uv_udp_getsockname*(handle: ptr TUdp; name: ptr TSockaddr; namelen: ptr cint): cint {.importc.}
-proc uv_udp_set_membership*(handle: ptr TUdp; multicast_addr: cstring; interface_addr: cstring;
-                            membership: TMembership): cint {.importc.}
-proc uv_udp_set_multicast_loop*(handle: ptr TUdp; on: cint): cint {.importc.}
-proc uv_udp_set_multicast_ttl*(handle: ptr TUdp; ttl: cint): cint {.importc.}
-proc uv_udp_set_broadcast*(handle: ptr TUdp; on: cint): cint {.importc.}
-proc uv_udp_set_ttl*(handle: ptr TUdp; ttl: cint): cint {.importc.}
-proc uv_udp_send(req: ptr TUdpSend; handle: ptr TUdp; bufs: ptr TBuf; bufcnt: cint; adr: TSockaddr_in;
-                 send_cb: TUdpSendCb): cint {.importc.}
-proc uv_udp_send6*(req: ptr TUdpSend; handle: ptr TUdp; bufs: ptr TBuf; bufcnt: cint;
-                   adr: TSockaddr_in6; send_cb: TUdpSendCb): cint {.importc.}
-proc uv_udp_recv_start*(handle: ptr TUdp; alloc_cb: TAllocCb; recv_cb: TUdpRecvCb): cint {.importc.}
-proc uv_udp_recv_stop*(handle: ptr TUdp): cint {.importc.}
-proc uv_tty_init*(a2: ptr TLoop; a3: ptr TTty; fd: TFile; readable: cint): cint {.importc.}
-proc uv_tty_set_mode*(a2: ptr TTty; mode: cint): cint {.importc.}
-proc uv_tty_reset_mode*() {.importc.}
-proc uv_tty_get_winsize*(a2: ptr TTty; width: ptr cint; height: ptr cint): cint {.importc.}
-proc uv_guess_handle*(file: TFile): THandleType {.importc.}
-proc uv_pipe_init*(a2: ptr TLoop; handle: ptr TPipe; ipc: cint): cint {.importc.}
-proc uv_pipe_open*(a2: ptr TPipe; file: TFile): cint {.importc.}
-proc uv_pipe_bind*(handle: ptr TPipe; name: cstring): cint {.importc.}
-proc uv_pipe_connect*(req: ptr TConnect; handle: ptr TPipe; name: cstring; cb: TConnectCb) {.importc.}
-proc uv_pipe_pending_instances*(handle: ptr TPipe; count: cint) {.importc.}
-proc uv_poll_init*(loop: ptr TLoop; handle: ptr TPoll; fd: cint): cint {.importc.}
-proc uv_poll_init_socket*(loop: ptr TLoop; handle: ptr TPoll; socket: TOsSock): cint {.importc.}
-proc uv_poll_start*(handle: ptr TPoll; events: cint; cb: TPollCb): cint {.importc.}
-proc uv_poll_stop*(handle: ptr TPoll): cint {.importc.}
-proc uv_prepare_init*(a2: ptr TLoop; prepare: ptr TPrepare): cint {.importc.}
-proc uv_prepare_start*(prepare: ptr TPrepare; cb: TPrepareCb): cint {.importc.}
-proc uv_prepare_stop*(prepare: ptr TPrepare): cint {.importc.}
-proc uv_check_init*(a2: ptr TLoop; check: ptr TCheck): cint {.importc.}
-proc uv_check_start*(check: ptr TCheck; cb: TCheckCb): cint {.importc.}
-proc uv_check_stop*(check: ptr TCheck): cint {.importc.}
-proc uv_idle_init*(a2: ptr TLoop; idle: ptr TIdle): cint {.importc.}
-proc uv_idle_start*(idle: ptr TIdle; cb: TIdleCb): cint {.importc.}
-proc uv_idle_stop*(idle: ptr TIdle): cint {.importc.}
-proc uv_async_init*(a2: ptr TLoop; async: ptr TAsync; async_cb: TAsyncCb): cint {.importc.}
-proc uv_async_send*(async: ptr TAsync): cint {.importc.}
-proc uv_timer_init*(a2: ptr TLoop; handle: ptr TTimer): cint {.importc.}
-proc uv_timer_start*(handle: ptr TTimer; cb: TTimerCb; timeout: uint64; repeat: uint64): cint {.importc.}
-proc uv_timer_stop*(handle: ptr TTimer): cint {.importc.}
-proc uv_timer_again*(handle: ptr TTimer): cint {.importc.}
-proc uv_timer_set_repeat*(handle: ptr TTimer; repeat: uint64) {.importc.}
-proc uv_timer_get_repeat*(handle: ptr TTimer): uint64 {.importc.}
-proc uv_getaddrinfo(loop: ptr TLoop; req: ptr TGetaddrinfo; getaddrinfo_cb: TGetaddrinfoCb;
-                    node: cstring; service: cstring; hints: ptr TAddrinfo): cint {.importc.}
-proc uv_freeaddrinfo*(ai: ptr TAddrinfo) {.importc.}
-proc uv_spawn*(a2: ptr TLoop; a3: ptr TProcess; options: TProcessOptions): cint {.importc.}
-proc uv_process_kill*(a2: ptr TProcess; signum: cint): cint {.importc.}
-proc uv_kill*(pid: cint; signum: cint): TErr {.importc.}
-proc uv_queue_work*(loop: ptr TLoop; req: ptr TWork; work_cb: TWorkCb; after_work_cb: TAfterWorkCb): cint {.importc.}
-proc uv_cancel*(req: ptr TReq): cint {.importc.}
-proc uv_setup_args*(argc: cint; argv: cstringArray): cstringArray {.importc.}
-proc uv_get_process_title*(buffer: cstring; size: int): TErr {.importc.}
-proc uv_set_process_title*(title: cstring): TErr {.importc.}
-proc uv_resident_set_memory*(rss: ptr int): TErr {.importc.}
-proc uv_uptime*(uptime: ptr cdouble): TErr {.importc.}
-proc uv_cpu_info*(cpu_infos: ptr ptr TCpuInfo; count: ptr cint): TErr {.importc.}
-proc uv_free_cpu_info*(cpu_infos: ptr TCpuInfo; count: cint) {.importc.}
-proc uv_interface_addresses*(addresses: ptr ptr TInterfaceAddress; count: ptr cint): TErr {.importc.}
-proc uv_free_interface_addresses*(addresses: ptr TInterfaceAddress; count: cint) {.importc.}
-proc uv_fs_req_cleanup*(req: ptr TFs) {.importc.}
-proc uv_fs_close*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.importc.}
-proc uv_fs_open*(loop: ptr TLoop; req: ptr TFs; path: cstring; flags: cint; mode: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_read*(loop: ptr TLoop; req: ptr TFs; file: TFile; buf: pointer; length: int; offset: int64;
-                 cb: TFsCb): cint {.importc.}
-proc uv_fs_unlink*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_write*(loop: ptr TLoop; req: ptr TFs; file: TFile; buf: pointer; length: int;
-                  offset: int64; cb: TFsCb): cint {.importc.}
-proc uv_fs_mkdir*(loop: ptr TLoop; req: ptr TFs; path: cstring; mode: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_rmdir*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_readdir*(loop: ptr TLoop; req: ptr TFs; path: cstring; flags: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_stat*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_fstat*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.importc.}
-proc uv_fs_rename*(loop: ptr TLoop; req: ptr TFs; path: cstring; new_path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_fsync*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.importc.}
-proc uv_fs_fdatasync*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.importc.}
-proc uv_fs_ftruncate*(loop: ptr TLoop; req: ptr TFs; file: TFile; offset: int64; cb: TFsCb): cint {.importc.}
-proc uv_fs_sendfile*(loop: ptr TLoop; req: ptr TFs; out_fd: TFile; in_fd: TFile; in_offset: int64;
-                     length: int; cb: TFsCb): cint {.importc.}
-proc uv_fs_chmod*(loop: ptr TLoop; req: ptr TFs; path: cstring; mode: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_utime*(loop: ptr TLoop; req: ptr TFs; path: cstring; atime: cdouble; mtime: cdouble;
-                  cb: TFsCb): cint {.importc.}
-proc uv_fs_futime*(loop: ptr TLoop; req: ptr TFs; file: TFile; atime: cdouble; mtime: cdouble;
-                   cb: TFsCb): cint {.importc.}
-proc uv_fs_lstat*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_link*(loop: ptr TLoop; req: ptr TFs; path: cstring; new_path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_symlink*(loop: ptr TLoop; req: ptr TFs; path: cstring; new_path: cstring; flags: cint;
-                    cb: TFsCb): cint {.importc.}
-proc uv_fs_readlink*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.importc.}
-proc uv_fs_fchmod*(loop: ptr TLoop; req: ptr TFs; file: TFile; mode: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_chown*(loop: ptr TLoop; req: ptr TFs; path: cstring; uid: cint; gid: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_fchown*(loop: ptr TLoop; req: ptr TFs; file: TFile; uid: cint; gid: cint; cb: TFsCb): cint {.importc.}
-proc uv_fs_poll_init*(loop: ptr TLoop; handle: ptr TFsPoll): cint {.importc.}
-proc uv_fs_poll_start*(handle: ptr TFsPoll; poll_cb: TFsPollCb; path: cstring; interval: cuint): cint {.importc.}
-proc uv_fs_poll_stop*(handle: ptr TFsPoll): cint {.importc.}
-proc uv_signal_init*(loop: ptr TLoop; handle: ptr TSignal): cint {.importc.}
-proc uv_signal_start*(handle: ptr TSignal; signal_cb: TSignalCb; signum: cint): cint {.importc.}
-proc uv_signal_stop*(handle: ptr TSignal): cint {.importc.}
-proc uv_loadavg*(avg: array[0..3 - 1, cdouble]) {.importc.}
-proc uv_fs_event_init*(loop: ptr TLoop; handle: ptr TFsEvent; filename: cstring; cb: TFsEventCb; flags: cint): cint {.importc.}
-proc uv_ip4_addr*(ip: cstring; port: cint): TSockaddrIn {.importc.}
-proc uv_ip6_addr*(ip: cstring; port: cint): TSockaddrIn6 {.importc.}
-proc uv_ip4_name*(src: ptr TSockaddrIn; dst: cstring; size: int): cint {.importc.}
-proc uv_ip6_name*(src: ptr TSockaddrIn6; dst: cstring; size: int): cint {.importc.}
-proc uv_inet_ntop*(af: cint; src: pointer; dst: cstring; size: int): TErr {.importc.}
-proc uv_inet_pton*(af: cint; src: cstring; dst: pointer): TErr {.importc.}
-proc uv_exepath*(buffer: cstring; size: ptr int): cint {.importc.}
-proc uv_cwd*(buffer: cstring; size: int): TErr {.importc.}
-proc uv_chdir*(dir: cstring): TErr {.importc.}
-proc uv_get_free_memory*(): uint64 {.importc.}
-proc uv_get_total_memory*(): uint64 {.importc.}
-proc uv_hrtime*(): uint64 {.importc.}
-proc uv_disable_stdio_inheritance*() {.importc.}
-proc uv_dlopen*(filename: cstring; lib: ptr TLib): cint {.importc.}
-proc uv_dlclose*(lib: ptr TLib) {.importc.}
-proc uv_dlsym*(lib: ptr TLib; name: cstring; p: ptr pointer): cint {.importc.}
-proc uv_dlerror*(lib: ptr TLib): cstring {.importc.}
-proc uv_mutex_init*(handle: ptr TMutex): cint {.importc.}
-proc uv_mutex_destroy*(handle: ptr TMutex) {.importc.}
-proc uv_mutex_lock*(handle: ptr TMutex) {.importc.}
-proc uv_mutex_trylock*(handle: ptr TMutex): cint {.importc.}
-proc uv_mutex_unlock*(handle: ptr TMutex) {.importc.}
-proc uv_rwlock_init*(rwlock: ptr TRwlock): cint {.importc.}
-proc uv_rwlock_destroy*(rwlock: ptr TRwlock) {.importc.}
-proc uv_rwlock_rdlock*(rwlock: ptr TRwlock) {.importc.}
-proc uv_rwlock_tryrdlock*(rwlock: ptr TRwlock): cint {.importc.}
-proc uv_rwlock_rdunlock*(rwlock: ptr TRwlock) {.importc.}
-proc uv_rwlock_wrlock*(rwlock: ptr TRwlock) {.importc.}
-proc uv_rwlock_trywrlock*(rwlock: ptr TRwlock): cint {.importc.}
-proc uv_rwlock_wrunlock*(rwlock: ptr TRwlock) {.importc.}
-proc uv_sem_init*(sem: ptr TSem; value: cuint): cint {.importc.}
-proc uv_sem_destroy*(sem: ptr TSem) {.importc.}
-proc uv_sem_post*(sem: ptr TSem) {.importc.}
-proc uv_sem_wait*(sem: ptr TSem) {.importc.}
-proc uv_sem_trywait*(sem: ptr TSem): cint {.importc.}
-proc uv_cond_init*(cond: ptr TCond): cint {.importc.}
-proc uv_cond_destroy*(cond: ptr TCond) {.importc.}
-proc uv_cond_signal*(cond: ptr TCond) {.importc.}
-proc uv_cond_broadcast*(cond: ptr TCond) {.importc.}
-proc uv_cond_wait*(cond: ptr TCond; mutex: ptr TMutex) {.importc.}
-proc uv_cond_timedwait*(cond: ptr TCond; mutex: ptr TMutex; timeout: uint64): cint {.importc.}
-proc uv_barrier_init*(barrier: ptr TBarrier; count: cuint): cint {.importc.}
-proc uv_barrier_destroy*(barrier: ptr TBarrier) {.importc.}
-proc uv_barrier_wait*(barrier: ptr TBarrier) {.importc.}
-proc uv_once*(guard: ptr TOnce; callback: TCallback) {.importc.}
-proc uv_thread_create*(tid: ptr TThread; entry: TEntry; arg: pointer): cint {.importc.}
-proc uv_thread_self*(): culong {.importc.}
-proc uv_thread_join*(tid: ptr TThread): cint {.importc.}
-{.pop.}
+{.pragma: libuv, cdecl, dynlib: LIBUV, importc: "uv_$1".}
+proc version*(): cuint {.libuv.}
+proc version_string*(): cstring {.libuv.}
+proc loop_new*(): ptr TLoop {.libuv.}
+proc loop_delete*(a2: ptr TLoop) {.libuv.}
+proc default_loop*(): ptr TLoop {.libuv.}
+proc run*(a2: ptr TLoop; mode: TRunMode): cint {.libuv.}
+proc stop*(a2: ptr TLoop) {.libuv.}
+proc href*(a2: ptr THandle) {.cdecl, dynlib: LIBUV, importc: "uv_ref".}
+proc unref*(a2: ptr THandle) {.libuv.}
+proc has_ref*(a2: ptr THandle): cint {.libuv.}
+proc update_time*(a2: ptr TLoop) {.libuv.}
+proc now*(a2: ptr TLoop): uint64 {.libuv.}
+proc backend_fd*(a2: ptr TLoop): cint {.libuv.}
+proc backend_timeout*(a2: ptr TLoop): cint {.libuv.}
+proc last_error*(a2: ptr TLoop): TErr {.libuv.}
+proc strerror*(err: TErr): cstring {.libuv.}
+proc err_name*(err: TErr): cstring {.libuv.}
+proc shutdown(req: ptr TShutdown; handle: ptr TStream; cb: TShutdownCb): cint {.libuv.}
+proc handle_size*(ttype: THandleType): int {.libuv.}
+proc req_size*(ttype: TReqType): int {.libuv.}
+proc is_active*(handle: ptr THandle): cint {.libuv.}
+proc walk*(loop: ptr TLoop; walk_cb: TWalkCb; arg: pointer) {.libuv.}
+proc close*(handle: ptr THandle; close_cb: TCloseCb) {.libuv.}
+proc buf_init*(base: cstring; len: cuint): TBuf {.libuv.}
+proc strlcpy*(dst: cstring; src: cstring; size: int): int {.libuv.}
+proc strlcat*(dst: cstring; src: cstring; size: int): int {.libuv.}
+proc listen*(stream: ptr TStream; backlog: cint; cb: TConnectionCb): cint {.libuv.}
+proc accept*(server: ptr TStream; client: ptr TStream): cint {.libuv.}
+proc read_start*(a2: ptr TStream; alloc_cb: TAllocCb; read_cb: TReadCb): cint {.libuv.}
+proc read_stop*(a2: ptr TStream): cint {.libuv.}
+proc read2_start*(a2: ptr TStream; alloc_cb: TAllocCb; read_cb: TRead2Cb): cint {.libuv.}
+proc write(req: ptr TWrite; handle: ptr TStream; bufs: ptr TBuf; bufcnt: cint; cb: TWriteCb): cint {.libuv.}
+proc write2*(req: ptr TWrite; handle: ptr TStream; bufs: ptr TBuf; bufcnt: cint;
+                send_handle: ptr TStream; cb: TWriteCb): cint {.libuv.}
+proc is_readable*(handle: ptr TStream): cint {.libuv.}
+proc is_writable*(handle: ptr TStream): cint {.libuv.}
+proc stream_set_blocking*(handle: ptr TStream; blocking: cint): cint {.libuv.}
+proc is_closing*(handle: ptr THandle): cint {.libuv.}
+proc tcp_init*(a2: ptr TLoop; handle: ptr TTcp): cint {.libuv.}
+proc tcp_open*(handle: ptr TTcp; sock: TOsSock): cint {.libuv.}
+proc tcp_nodelay*(handle: ptr TTcp; enable: cint): cint {.libuv.}
+proc tcp_keepalive*(handle: ptr TTcp; enable: cint; delay: cuint): cint {.libuv.}
+proc tcp_simultaneous_accepts*(handle: ptr TTcp; enable: cint): cint {.libuv.}
+proc tcp_bind*(handle: ptr TTcp; a3: TSockaddr_in): cint {.libuv.}
+proc tcp_bind6*(handle: ptr TTcp; a3: TSockaddr_in6): cint {.libuv.}
+proc tcp_getsockname*(handle: ptr TTcp; name: ptr TSockaddr; namelen: ptr cint): cint {.libuv.}
+proc tcp_getpeername*(handle: ptr TTcp; name: ptr TSockaddr; namelen: ptr cint): cint {.libuv.}
+proc tcp_connect*(req: ptr TConnect; handle: ptr TTcp; address: TSockaddr_in; cb: TConnectCb): cint {.libuv.}
+proc tcp_connect6*(req: ptr TConnect; handle: ptr TTcp; address: TSockaddr_in6; cb: TConnectCb): cint {.libuv.}
+proc udp_init*(a2: ptr TLoop; handle: ptr TUdp): cint {.libuv.}
+proc udp_open*(handle: ptr TUdp; sock: TOsSock): cint {.libuv.}
+proc udp_bind*(handle: ptr TUdp; adr: TSockaddr_in; flags: cuint): cint {.libuv.}
+proc udp_bind6*(handle: ptr TUdp; adr: TSockaddr_in6; flags: cuint): cint {.libuv.}
+proc udp_getsockname*(handle: ptr TUdp; name: ptr TSockaddr; namelen: ptr cint): cint {.libuv.}
+proc udp_set_membership*(handle: ptr TUdp; multicast_addr: cstring; interface_addr: cstring;
+                            membership: TMembership): cint {.libuv.}
+proc udp_set_multicast_loop*(handle: ptr TUdp; on: cint): cint {.libuv.}
+proc udp_set_multicast_ttl*(handle: ptr TUdp; ttl: cint): cint {.libuv.}
+proc udp_set_broadcast*(handle: ptr TUdp; on: cint): cint {.libuv.}
+proc udp_set_ttl*(handle: ptr TUdp; ttl: cint): cint {.libuv.}
+proc udp_send(req: ptr TUdpSend; handle: ptr TUdp; bufs: ptr TBuf; bufcnt: cint; adr: TSockaddr_in;
+                 send_cb: TUdpSendCb): cint {.libuv.}
+proc udp_send6*(req: ptr TUdpSend; handle: ptr TUdp; bufs: ptr TBuf; bufcnt: cint;
+                   adr: TSockaddr_in6; send_cb: TUdpSendCb): cint {.libuv.}
+proc udp_recv_start*(handle: ptr TUdp; alloc_cb: TAllocCb; recv_cb: TUdpRecvCb): cint {.libuv.}
+proc udp_recv_stop*(handle: ptr TUdp): cint {.libuv.}
+proc tty_init*(a2: ptr TLoop; a3: ptr TTty; fd: TFile; readable: cint): cint {.libuv.}
+proc tty_set_mode*(a2: ptr TTty; mode: cint): cint {.libuv.}
+proc tty_reset_mode*() {.libuv.}
+proc tty_get_winsize*(a2: ptr TTty; width: ptr cint; height: ptr cint): cint {.libuv.}
+proc guess_handle*(file: TFile): THandleType {.libuv.}
+proc pipe_init*(a2: ptr TLoop; handle: ptr TPipe; ipc: cint): cint {.libuv.}
+proc pipe_open*(a2: ptr TPipe; file: TFile): cint {.libuv.}
+proc pipe_bind*(handle: ptr TPipe; name: cstring): cint {.libuv.}
+proc pipe_connect*(req: ptr TConnect; handle: ptr TPipe; name: cstring; cb: TConnectCb) {.libuv.}
+proc pipe_pending_instances*(handle: ptr TPipe; count: cint) {.libuv.}
+proc poll_init*(loop: ptr TLoop; handle: ptr TPoll; fd: cint): cint {.libuv.}
+proc poll_init_socket*(loop: ptr TLoop; handle: ptr TPoll; socket: TOsSock): cint {.libuv.}
+proc poll_start*(handle: ptr TPoll; events: cint; cb: TPollCb): cint {.libuv.}
+proc poll_stop*(handle: ptr TPoll): cint {.libuv.}
+proc prepare_init*(a2: ptr TLoop; prepare: ptr TPrepare): cint {.libuv.}
+proc prepare_start*(prepare: ptr TPrepare; cb: TPrepareCb): cint {.libuv.}
+proc prepare_stop*(prepare: ptr TPrepare): cint {.libuv.}
+proc check_init*(a2: ptr TLoop; check: ptr TCheck): cint {.libuv.}
+proc check_start*(check: ptr TCheck; cb: TCheckCb): cint {.libuv.}
+proc check_stop*(check: ptr TCheck): cint {.libuv.}
+proc idle_init*(a2: ptr TLoop; idle: ptr TIdle): cint {.libuv.}
+proc idle_start*(idle: ptr TIdle; cb: TIdleCb): cint {.libuv.}
+proc idle_stop*(idle: ptr TIdle): cint {.libuv.}
+proc async_init*(a2: ptr TLoop; async: ptr TAsync; async_cb: TAsyncCb): cint {.libuv.}
+proc async_send*(async: ptr TAsync): cint {.libuv.}
+proc timer_init*(a2: ptr TLoop; handle: ptr TTimer): cint {.libuv.}
+proc timer_start*(handle: ptr TTimer; cb: TTimerCb; timeout: uint64; repeat: uint64): cint {.libuv.}
+proc timer_stop*(handle: ptr TTimer): cint {.libuv.}
+proc timer_again*(handle: ptr TTimer): cint {.libuv.}
+proc timer_set_repeat*(handle: ptr TTimer; repeat: uint64) {.libuv.}
+proc timer_get_repeat*(handle: ptr TTimer): uint64 {.libuv.}
+proc getaddrinfo(loop: ptr TLoop; req: ptr TGetaddrinfo; getaddrinfo_cb: TGetaddrinfoCb;
+                    node: cstring; service: cstring; hints: ptr TAddrinfo): cint {.libuv.}
+proc freeaddrinfo*(ai: ptr TAddrinfo) {.libuv.}
+proc spawn*(a2: ptr TLoop; a3: ptr TProcess; options: TProcessOptions): cint {.libuv.}
+proc process_kill*(a2: ptr TProcess; signum: cint): cint {.libuv.}
+proc kill*(pid: cint; signum: cint): TErr {.libuv.}
+proc queue_work*(loop: ptr TLoop; req: ptr TWork; work_cb: TWorkCb; after_work_cb: TAfterWorkCb): cint {.libuv.}
+proc cancel*(req: ptr TReq): cint {.libuv.}
+proc setup_args*(argc: cint; argv: cstringArray): cstringArray {.libuv.}
+proc get_process_title*(buffer: cstring; size: int): TErr {.libuv.}
+proc set_process_title*(title: cstring): TErr {.libuv.}
+proc resident_set_memory*(rss: ptr int): TErr {.libuv.}
+proc uptime*(uptime: ptr cdouble): TErr {.libuv.}
+proc cpu_info*(cpu_infos: ptr ptr TCpuInfo; count: ptr cint): TErr {.libuv.}
+proc free_cpu_info*(cpu_infos: ptr TCpuInfo; count: cint) {.libuv.}
+proc interface_addresses*(addresses: ptr ptr TInterfaceAddress; count: ptr cint): TErr {.libuv.}
+proc free_interface_addresses*(addresses: ptr TInterfaceAddress; count: cint) {.libuv.}
+proc fs_req_cleanup*(req: ptr TFs) {.libuv.}
+proc fs_close*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.libuv.}
+proc fs_open*(loop: ptr TLoop; req: ptr TFs; path: cstring; flags: cint; mode: cint; cb: TFsCb): cint {.libuv.}
+proc fs_read*(loop: ptr TLoop; req: ptr TFs; file: TFile; buf: pointer; length: int; offset: int64;
+                 cb: TFsCb): cint {.libuv.}
+proc fs_unlink*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_write*(loop: ptr TLoop; req: ptr TFs; file: TFile; buf: pointer; length: int;
+                  offset: int64; cb: TFsCb): cint {.libuv.}
+proc fs_mkdir*(loop: ptr TLoop; req: ptr TFs; path: cstring; mode: cint; cb: TFsCb): cint {.libuv.}
+proc fs_rmdir*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_readdir*(loop: ptr TLoop; req: ptr TFs; path: cstring; flags: cint; cb: TFsCb): cint {.libuv.}
+proc fs_stat*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_fstat*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.libuv.}
+proc fs_rename*(loop: ptr TLoop; req: ptr TFs; path: cstring; new_path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_fsync*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.libuv.}
+proc fs_fdatasync*(loop: ptr TLoop; req: ptr TFs; file: TFile; cb: TFsCb): cint {.libuv.}
+proc fs_ftruncate*(loop: ptr TLoop; req: ptr TFs; file: TFile; offset: int64; cb: TFsCb): cint {.libuv.}
+proc fs_sendfile*(loop: ptr TLoop; req: ptr TFs; out_fd: TFile; in_fd: TFile; in_offset: int64;
+                     length: int; cb: TFsCb): cint {.libuv.}
+proc fs_chmod*(loop: ptr TLoop; req: ptr TFs; path: cstring; mode: cint; cb: TFsCb): cint {.libuv.}
+proc fs_utime*(loop: ptr TLoop; req: ptr TFs; path: cstring; atime: cdouble; mtime: cdouble;
+                  cb: TFsCb): cint {.libuv.}
+proc fs_futime*(loop: ptr TLoop; req: ptr TFs; file: TFile; atime: cdouble; mtime: cdouble;
+                   cb: TFsCb): cint {.libuv.}
+proc fs_lstat*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_link*(loop: ptr TLoop; req: ptr TFs; path: cstring; new_path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_symlink*(loop: ptr TLoop; req: ptr TFs; path: cstring; new_path: cstring; flags: cint;
+                    cb: TFsCb): cint {.libuv.}
+proc fs_readlink*(loop: ptr TLoop; req: ptr TFs; path: cstring; cb: TFsCb): cint {.libuv.}
+proc fs_fchmod*(loop: ptr TLoop; req: ptr TFs; file: TFile; mode: cint; cb: TFsCb): cint {.libuv.}
+proc fs_chown*(loop: ptr TLoop; req: ptr TFs; path: cstring; uid: cint; gid: cint; cb: TFsCb): cint {.libuv.}
+proc fs_fchown*(loop: ptr TLoop; req: ptr TFs; file: TFile; uid: cint; gid: cint; cb: TFsCb): cint {.libuv.}
+proc fs_poll_init*(loop: ptr TLoop; handle: ptr TFsPoll): cint {.libuv.}
+proc fs_poll_start*(handle: ptr TFsPoll; poll_cb: TFsPollCb; path: cstring; interval: cuint): cint {.libuv.}
+proc fs_poll_stop*(handle: ptr TFsPoll): cint {.libuv.}
+proc signal_init*(loop: ptr TLoop; handle: ptr TSignal): cint {.libuv.}
+proc signal_start*(handle: ptr TSignal; signal_cb: TSignalCb; signum: cint): cint {.libuv.}
+proc signal_stop*(handle: ptr TSignal): cint {.libuv.}
+proc loadavg*(avg: array[0..3 - 1, cdouble]) {.libuv.}
+proc fs_event_init*(loop: ptr TLoop; handle: ptr TFsEvent; filename: cstring; cb: TFsEventCb; flags: cint): cint {.libuv.}
+proc ip4_addr*(ip: cstring; port: cint): TSockaddrIn {.libuv.}
+proc ip6_addr*(ip: cstring; port: cint): TSockaddrIn6 {.libuv.}
+proc ip4_name*(src: ptr TSockaddrIn; dst: cstring; size: int): cint {.libuv.}
+proc ip6_name*(src: ptr TSockaddrIn6; dst: cstring; size: int): cint {.libuv.}
+proc inet_ntop*(af: cint; src: pointer; dst: cstring; size: int): TErr {.libuv.}
+proc inet_pton*(af: cint; src: cstring; dst: pointer): TErr {.libuv.}
+proc exepath*(buffer: cstring; size: ptr int): cint {.libuv.}
+proc cwd*(buffer: cstring; size: int): TErr {.libuv.}
+proc chdir*(dir: cstring): TErr {.libuv.}
+proc get_free_memory*(): uint64 {.libuv.}
+proc get_total_memory*(): uint64 {.libuv.}
+proc hrtime*(): uint64 {.libuv.}
+proc disable_stdio_inheritance*() {.libuv.}
+proc dlopen*(filename: cstring; lib: ptr TLib): cint {.libuv.}
+proc dlclose*(lib: ptr TLib) {.libuv.}
+proc dlsym*(lib: ptr TLib; name: cstring; p: ptr pointer): cint {.libuv.}
+proc dlerror*(lib: ptr TLib): cstring {.libuv.}
+proc mutex_init*(handle: ptr TMutex): cint {.libuv.}
+proc mutex_destroy*(handle: ptr TMutex) {.libuv.}
+proc mutex_lock*(handle: ptr TMutex) {.libuv.}
+proc mutex_trylock*(handle: ptr TMutex): cint {.libuv.}
+proc mutex_unlock*(handle: ptr TMutex) {.libuv.}
+proc rwlock_init*(rwlock: ptr TRwlock): cint {.libuv.}
+proc rwlock_destroy*(rwlock: ptr TRwlock) {.libuv.}
+proc rwlock_rdlock*(rwlock: ptr TRwlock) {.libuv.}
+proc rwlock_tryrdlock*(rwlock: ptr TRwlock): cint {.libuv.}
+proc rwlock_rdunlock*(rwlock: ptr TRwlock) {.libuv.}
+proc rwlock_wrlock*(rwlock: ptr TRwlock) {.libuv.}
+proc rwlock_trywrlock*(rwlock: ptr TRwlock): cint {.libuv.}
+proc rwlock_wrunlock*(rwlock: ptr TRwlock) {.libuv.}
+proc sem_init*(sem: ptr TSem; value: cuint): cint {.libuv.}
+proc sem_destroy*(sem: ptr TSem) {.libuv.}
+proc sem_post*(sem: ptr TSem) {.libuv.}
+proc sem_wait*(sem: ptr TSem) {.libuv.}
+proc sem_trywait*(sem: ptr TSem): cint {.libuv.}
+proc cond_init*(cond: ptr TCond): cint {.libuv.}
+proc cond_destroy*(cond: ptr TCond) {.libuv.}
+proc cond_signal*(cond: ptr TCond) {.libuv.}
+proc cond_broadcast*(cond: ptr TCond) {.libuv.}
+proc cond_wait*(cond: ptr TCond; mutex: ptr TMutex) {.libuv.}
+proc cond_timedwait*(cond: ptr TCond; mutex: ptr TMutex; timeout: uint64): cint {.libuv.}
+proc barrier_init*(barrier: ptr TBarrier; count: cuint): cint {.libuv.}
+proc barrier_destroy*(barrier: ptr TBarrier) {.libuv.}
+proc barrier_wait*(barrier: ptr TBarrier) {.libuv.}
+proc once*(guard: ptr TOnce; callback: TCallback) {.libuv.}
+proc thread_create*(tid: ptr TThread; entry: TEntry; arg: pointer): cint {.libuv.}
+proc thread_self*(): culong {.libuv.}
+proc thread_join*(tid: ptr TThread): cint {.libuv.}
+
+when isMainModule:
+  echo version()
