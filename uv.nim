@@ -785,28 +785,24 @@ when isMainModule:
   proc check_err(err: int) =
     assert err == 0, "Response was: " & $TErrCode(err)
 
-  template set_timer(timeout: uint64, repeat: uint64, actions: proc): TTimer =
-    block:
-      var timer: TTimer
-      check_err timer_init(Loop, addr timer)
-      var cb = (proc (handle: ptr TTimer, status: cint) = actions())
-      check_err timer_start(addr timer, cb, timeout, repeat)
-      timer
+  template set_timer(timeout: uint64, repeat: uint64, timer: var TTimer, actions: proc ()) =
+    check_err timer_init(Loop, addr timer)
+    var cb = proc (handle: ptr TTimer; status: cint) = actions()
+    check_err timer_start(addr timer, cb, timeout, repeat)
 
-  proc set_interval(interval: uint64, actions: proc) =
-    discard set_timer(interval, interval, actions)
-
-  proc set_timeout(timeout: uint64, actions: proc) =
-    discard set_timer(timeout, 0, actions)
+  template set_timer(timeout: uint64, repeat: uint64, actions: proc ()) =
+    var t: TTimer
+    set_timer(timeout, repeat, t, actions)
 
   proc init =
     echo "Running LibUV ", version_string()
     check_err run(Loop, RUN_DEFAULT)
 
-  var t = (set_timer(1000, 1000) do:
-    echo("Interval every 1s"))
+  var t: TTimer
+  set_timer(1000, 1000, t):
+    echo("Interval every 1s with t")
 
-  # set_timeout(1000) do:
-  #   echo "Timeout after 1s"
+  set_timer(2000, 2000):
+    echo("Interval every 1s without t")
 
   init()
