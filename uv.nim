@@ -1,7 +1,7 @@
 when defined(windows):
   import winlean
 else:
-  from posix import TAddrinfo, TSockaddr, TSockaddrIn, TSockaddrIn6, TMode, TOff, TGid
+  from posix import TAddrinfo, TSockaddr, TSockaddrIn, TSockaddrIn6, TMode, TOff, TGid, TStat
 
 const LIBUV =
   when defined(windows): "libuv.dll"
@@ -207,7 +207,6 @@ type
     async_cb* : TAsyncCb
     queue* : array[0..2 - 1, pointer]
     pending* : cint
-
 
   TWorkreq* = object
     work* : proc (w: ptr TWork) {.cdecl.}
@@ -462,7 +461,7 @@ type
   TConnectionCb* = proc (server: ptr TStream; status: cint) {.cdecl.}
   TCloseCb* = proc (handle: ptr THandle) {.cdecl.}
   TPollCb* = proc (handle: ptr TPoll; status: cint; events: cint) {.cdecl.}
-  TTimerCb* = proc (handle: ptr TTimer; status: cint) {.cdecl.}
+  TTimerCb* = proc (handle: ptr TTimer; status: cint)
   TAsyncCb* = proc (handle: ptr TAsync; status: cint) {.cdecl.}
   TPrepareCb* = proc (handle: ptr TPrepare; status: cint) {.cdecl.}
   TCheckCb* = proc (handle: ptr TCheck; status: cint) {.cdecl.}
@@ -474,21 +473,6 @@ type
   TTimespec* = object
     tv_sec* : clong
     tv_nsec* : clong
-
-  TStat* = object
-    st_dev* : uint64
-    st_mode* : uint64
-    st_nlink* : uint64
-    st_uid* : uint64
-    st_gid* : uint64
-    st_rdev* : uint64
-    st_ino* : uint64
-    st_size* : uint64
-    st_blksize* : uint64
-    st_blocks* : uint64
-    st_atim* : TTimespec
-    st_mtim* : TTimespec
-    st_ctim* : TTimespec
 
   TFsEventCb* = proc (handle: ptr TFsEvent; filename: cstring; events: cint; status: cint) {.cdecl.}
   TFsPollCb* = proc (handle: ptr TFsPoll; status: cint; prev: ptr TStat; curr: ptr TStat) {.cdecl.}
@@ -796,4 +780,33 @@ proc thread_self*(): culong {.libuv.}
 proc thread_join*(tid: ptr TThread): cint {.libuv.}
 
 when isMainModule:
-  echo version()
+  let Loop = default_loop()
+
+  proc check_err(err: int) =
+    assert err == 0, "Response was: " & $TErrCode(err)
+
+  template set_timer(timeout: uint64, repeat: uint64, actions: proc): TTimer =
+    block:
+      var timer: TTimer
+      check_err timer_init(Loop, addr timer)
+      var cb = (proc (handle: ptr TTimer, status: cint) = actions())
+      check_err timer_start(addr timer, cb, timeout, repeat)
+      timer
+
+  proc set_interval(interval: uint64, actions: proc) =
+    discard set_timer(interval, interval, actions)
+
+  proc set_timeout(timeout: uint64, actions: proc) =
+    discard set_timer(timeout, 0, actions)
+
+  proc init =
+    echo "Running LibUV ", version_string()
+    check_err run(Loop, RUN_DEFAULT)
+
+  var t = (set_timer(1000, 1000) do:
+    echo("Interval every 1s"))
+
+  # set_timeout(1000) do:
+  #   echo "Timeout after 1s"
+
+  init()
